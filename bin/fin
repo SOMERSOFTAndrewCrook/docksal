@@ -7600,6 +7600,14 @@ export MYSQL_USER=${MYSQL_USER:-user}
 export MYSQL_PASSWORD=${MYSQL_PASSWORD:-user}
 export MYSQL_DATABASE=${MYSQL_DATABASE:-default}
 
+# Default PostgresSQL settings
+# These may be overridden via project level env files (e.g., docksal.env)
+export POSTGRES_HOST=${POSTGRES_HOST:-db}
+export POSTGRES_ROOT_PASSWORD=${POSTGRES_ROOT_PASSWORD:-root}
+export POSTGRES_USER=${POSTGRES_USER:-user}
+export POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-user}
+export POSTGRES_DATABASE=${POSTGRES_DATABASE:-default}
+
 # Container logging settings
 export DOCKSAL_CONTAINER_LOG_MAX_SIZE
 export DOCKSAL_CONTAINER_LOG_MAX_FILE
