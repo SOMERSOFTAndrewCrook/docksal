@@ -6017,14 +6017,13 @@ psql_db_drop ()
 	container_psql_vars=$(docker exec "$container_id" env | grep "^POSTGRES_")
 	eval ${container_psql_vars}
 
-	local __dump_user="${dbuser:-root}"
-	local __dump_password="${dbpassword:-$POSTGRES_ROOT_PASSWORD}"
+	local __dump_user="${dbuser:-$POSTGRES_USER}"
+	local __dump_password="${dbpassword:-$POSTGRES_PASSWORD}"
 	local __db="${ARGV[0]}"
 
 	[[ "${__db}" == "" ]] && echo-error "Provide the name of the database to drop." && exit 1
 
-	_psql --db=" " --db-user="${__dump_user}" --db-password="${__dump_password}" \
-		"DROP DATABASE IF EXISTS \`${__db}\`"
+	_exec --in="db" "PGPASSWORD=${__dump_password} dropdb --username=${__dump_user} --if-exist ${__db}"
 
 	if_failed_error "Dropping '${__db}' database failed"
 	echo -e "Database ${yellow}${__db}${NC} dropped"
