@@ -8222,31 +8222,31 @@ case "$1" in
 		case "$1" in
 			cli)
 				shift
-				_mysql "$@"
+				_psql "$@"
 				;;
 			list|ls)
 				shift
-				mysql_list "$@"
+				psql_list "$@"
 				;;
 			import)
 				shift
-				mysql_import "$@"
+				psql_import "$@"
 				;;
 			dump)
 				shift
-				mysql_dump "$@"
+				psql_dump "$@"
 				;;
 			create)
 				shift
-				mysql_db_create "$@"
+				psql_db_create "$@"
 				;;
 			drop)
 				shift
-				mysql_db_drop "$@"
+				psql_db_drop "$@"
 				;;
 			truncate)
 				shift
-				mysql_db_truncate "$@"
+				psql_db_truncate "$@"
 				;;
 			*)
 				show_help_db
