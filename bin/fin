@@ -6170,8 +6170,8 @@ psql_dump ()
 	container_psql_vars=$(docker exec "$container_id" env | grep "^POSTGRES_")
 	eval ${container_psql_vars}
 
-	local __dump_user="${dbuser:-root}"
-	local __dump_password="${dbpassword:-$POSTGRES_ROOT_PASSWORD}"
+	local __dump_user="${dbuser:-$POSTGRES_USER}"
+	local __dump_password="${dbpassword:-$POSTGRES_PASSWORD}"
 	local __database="${db:-${POSTGRES_DATABASE:-default}}"
 	local __output="${ARGV[0]}"
 
@@ -6182,11 +6182,11 @@ psql_dump ()
 	fi
 
 	container_id=$(get_project_container_id "db")
-	__psql_command=$(docker exec -i "$container_id" bash -c "echo -u${__dump_user} -p${__dump_password}")
+	__psql_command=$(docker exec -i "$container_id" bash -c "echo --username=${__dump_user}")
 	if [[ "${ARGV[0]}" == "" ]]; then
-		docker exec -i "$container_id" psqldump ${__psql_command} ${__database}
+		docker exec -i --env PGPASSWORD=${__dump_password} "$container_id" pg_dump ${__psql_command} --create --clean ${__database}
 	else
-		docker exec -i "$container_id" psqldump ${__psql_command} ${__database} | tee "${__output}" >/dev/null
+		docker exec -i --env PGPASSWORD=${__dump_password} "$container_id" pg_dump ${__psql_command} --create --clean ${__database} | tee "${__output}" >/dev/null
 	fi
 
 	if [[ "${ARGV[0]}" != "" ]]; then
