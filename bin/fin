@@ -5929,9 +5929,9 @@ _psql ()
 	container_psql_vars=$(docker exec "$container_id" env | grep "^POSTGRES_")
 	eval ${container_psql_vars}
 
-	local __dump_user="${dbuser:-root}"
+	local __dump_user="${dbuser:-$POSTGRES_USER}"
 	# POSTGRES_* variable expansion happens here
-	local __dump_password="${dbpassword:-$POSTGRES_ROOT_PASSWORD}"
+	local __dump_password="${dbpassword:-$POSTGRES_PASSWORD}"
 	local __database="${db:-$POSTGRES_DATABASE}"
 	local __pty_command=''
 	if is_tty || [[ -z "${ARGV[*]}" ]]; then
@@ -5942,11 +5942,10 @@ _psql ()
 		__pty_alloc='-t'
 	fi
 
-	${__pty_command} docker exec -i ${__pty_alloc} "${container_id}" psql \
-		-u"${__dump_user}" \
-		-p"${__dump_password}" \
+	${__pty_command} docker exec -i ${__pty_alloc} --env PGPASSWORD=${__dump_password} "${container_id}" psql \
+		--username="${__dump_user}" \
 		${__database} \
-		${ARGV:+-e "${ARGV[*]}"}
+		${ARGV:+--command="${ARGV[*]}"}
 }
 
 # Show databases list
@@ -5972,7 +5971,7 @@ psql_list ()
 # --db-user="admin" to override psql username
 # --db-password="otherpass" to override psql password
 # --db-charset="..." to override charset (default is utf8)
-# --db-collation="..." to override collation (default is utf8_general_ci)
+# --db-collation="..." to override collation (default is en_US.utf8)
 psql_db_create ()
 {
 	check_project_environment
@@ -5983,20 +5982,22 @@ psql_db_create ()
 	container_psql_vars=$(docker exec "$container_id" env | grep "^POSTGRES_")
 	eval ${container_psql_vars}
 
-	local __dump_user="${dbuser:-root}"
-	local __dump_password="${dbpassword:-$POSTGRES_ROOT_PASSWORD}"
+	local __dump_user="${dbuser:-$POSTGRES_USER}"
+	local __dump_password="${dbpassword:-$POSTGRES_PASSWORD}"
 	local __db="${ARGV[0]}"
-	local __db_charset="${dbcharset:-utf8mb4}"
-	local __db_collation="${dbcollation:-utf8mb4_unicode_ci}"
+	local __db_charset="${dbcharset:-utf8}"
+	local __db_collation="${dbcollation:-en_US.utf8}"
 
 	[[ "${__db}" == "" ]] && echo-error "Provide a name for the database to create" && exit 1
 
-	# Set db to space since the db does not exist here yet
-	(_psql --db=" " --db-user="${__dump_user}" --db-password="${__dump_password}" \
-		"CREATE DATABASE IF NOT EXISTS \`${__db}\` CHARACTER SET ${__db_charset} COLLATE ${__db_collation};") &&
+	_exec --in="db" "PGPASSWORD=${__dump_password} createdb --username=${__dump_user} --encoding=${__db_charset} --lc-collate=${__db_collation} ${__db}"
+
+		# GRANT ALL has to happen in a separate query, otherwise we will be hitting a race condition (when db is not yet created).
+  (_psql --db="${__db}" --db-user="${__dump_user}" --db-password="${__dump_password}" \
+		"GRANT ALL ON ALL TABLES IN SCHEMA public TO PUBLIC;") \
 		# GRANT ALL has to happen in a separate query, otherwise we will be hitting a race condition (when db is not yet created).
 		(_psql --db="${__db}" --db-user="${__dump_user}" --db-password="${__dump_password}" \
-		"GRANT ALL PRIVILEGES ON \`${__db}\`.* TO \`${POSTGRES_USER}\`;")
+		"GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO PUBLIC;")
 
 	if_failed_error "Database '${__db}' creation failed"
 
