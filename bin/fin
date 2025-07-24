@@ -5962,11 +5962,11 @@ psql_list ()
 	container_psql_vars=$(docker exec "$container_id" env | grep "^POSTGRES_")
 	eval ${container_psql_vars}
 
-	local __dump_user="${dbuser:-root}"
-	local __dump_password="${dbpassword:-$POSTGRES_ROOT_PASSWORD}"
+	local __dump_user="${dbuser:-$POSTGRES_USER}"
+	local __dump_password="${dbpassword:-$POSTGRES_PASSWORD}"
 
 	# -N parameter suppresses columns header
-	_exec --in="db" "echo 'SHOW DATABASES' | psql -N -u ${__dump_user} -p${__dump_password}"
+	_exec --in="db" "echo '\l' | PGPASSWORD=${__dump_password} psql --username=${__dump_user} postgres"
 }
 
 # Create a database
