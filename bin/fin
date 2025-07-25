@@ -8277,7 +8277,7 @@ case "$1" in
 						_psql "$@"
 						;;
 				esac
-		  ;;
+				;;
 			list|ls)
 				shift
 		 		case $db_type in
