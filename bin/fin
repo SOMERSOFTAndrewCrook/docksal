@@ -6084,7 +6084,7 @@ psql_db_truncate ()
 	eval ${container_psql_vars}
 
 	local __dump_user="${dbuser:-root}"
-	local __dump_password="${dbpassword:-$POSTGRES_ROOT_PASSWORD}"
+	local __dump_password="${dbpassword:-$POSTGRES_PASSWORD}"
 	local __database="${1:-${POSTGRES_DATABASE:-default}}"
 
 	echo -e "Truncating ${yellow}${__database}${NC} database..."
@@ -6123,8 +6123,8 @@ psql_import ()
 	container_psql_vars=$(docker exec "$container_id" env | grep "^POSTGRES_")
 	eval ${container_psql_vars}
 
-	local __dump_user="${dbuser:-root}"
-	local __dump_password="${dbpassword:-$POSTGRES_ROOT_PASSWORD}"
+	local __dump_user="${dbuser:-$POSTGRES_USER}"
+	local __dump_password="${dbpassword:-$POSTGRES_PASSWORD}"
 	local __database="${db:-${POSTGRES_DATABASE:-default}}"
 	# /dev/fd/0 is the stdin stream for current script
 	# IMPORTANT: don't run "docker exec" with "-i" until value of /dev/fd/0 is used or its value will be lost
@@ -7931,7 +7931,6 @@ export MYSQL_DATABASE=${MYSQL_DATABASE:-default}
 # Default PostgresSQL settings
 # These may be overridden via project level env files (e.g., docksal.env)
 export POSTGRES_HOST=${POSTGRES_HOST:-db}
-export POSTGRES_ROOT_PASSWORD=${POSTGRES_ROOT_PASSWORD:-root}
 export POSTGRES_USER=${POSTGRES_USER:-user}
 export POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-user}
 export POSTGRES_DATABASE=${POSTGRES_DATABASE:-default}
