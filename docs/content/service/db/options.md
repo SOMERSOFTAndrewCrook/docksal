@@ -52,3 +52,10 @@ The following order is used to determine which db service is currently being use
 This way there is much flexibility in the configuration of the `db` service.
 
 `fin config` can be used to determine the second `volumes` `target` information
+
+## PostgreSQL utility programs {#postgresql-utility-programs}
+The following PostgreSQL utility programs are using by fin commands
+- `psql` - the PostgreSQL command line client
+- `createdb` - the PostgreSQL database creation utility
+- `dropdb` - the PostgreSQL database deletion utility
+- `pg_dump` - the PostgreSQL database dump utility
