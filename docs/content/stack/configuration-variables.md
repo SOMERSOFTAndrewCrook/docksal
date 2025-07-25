@@ -381,7 +381,7 @@ The port to use when setting up PostgreSQL.
 
 ### POSTGRES_DB
 
-`Default: user`
+`Default: default`
 
 This variable allows you to specify the name of a database to be created on image startup.
 
