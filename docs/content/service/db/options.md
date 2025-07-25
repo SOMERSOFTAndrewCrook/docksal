@@ -14,7 +14,6 @@ Docksal has defined a db service with a MariaDB image. To set your db service to
 instead of MySQL, set the db service in your `docksal.yml` file.
 
 ```yaml
-version: "2.1"
 services:
   db:
     extends:
@@ -29,7 +28,6 @@ Docksal has defined a db service with a PostreSQL image. To set your db service 
 set the db service in your `docksal.yml` file.
 
 ```yaml
-version: "2.1"
 services:
   db:
     extends:
