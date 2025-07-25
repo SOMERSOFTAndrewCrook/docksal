@@ -418,6 +418,11 @@ IMAGE_VHOST_PROXY=${IMAGE_VHOST_PROXY:-docksal/vhost-proxy:1.8}
 IMAGE_DNS=${IMAGE_DNS:-docksal/dns:1.2}
 IMAGE_RUN_CLI=${IMAGE_RUN_CLI:-docksal/cli:php8.3-3.8}
 
+# Database types
+DB_TYPE_UNKNOWN='unknown'
+DB_TYPE_MYSQL='mysql'
+DB_TYPE_POSTGRES='postgres'
+
 #---------------------------- Helper functions --------------------------------
 
 DOCKSAL_PATH='' #docksal path value will be cached here
@@ -5914,6 +5919,40 @@ mysql_dump ()
 	fi
 }
 
+get_db_type()
+{
+  # Check if the db container is running and has psql installed
+  local container_id=$(get_project_container_id "db")
+  if [[ -z "$container_id" ]]; then
+    echo ${DB_TYPE_UNKNOWN}
+    return
+  fi
+
+  # Check to see if the db container has a specific label for db type.
+  local db_type=$(docker inspect --format '{{ index .Config.Labels "io.docksal.db-type"}}' ${container_id} 2>/dev/null)
+  if [[ "$db_type" != "" ]]; then
+    echo $db_type
+    return
+  fi
+
+  # Check the mounted volumes to determine the db type
+  # This is a workaround for the case when the db container does not have the label set
+  # and we need to determine the db type based on the mounted volumes.
+  # This is useful for legacy projects that do not have the label set.
+  # It assumes that the db container has a volume mounted to /var/lib/mysql/data for MySQL
+  # and /var/lib/postgresql/data for PostgreSQL.
+  # If the volume is not mounted, it defaults to MySQL.
+  local volume_destination=$(docker inspect --format '{{ (index .Mounts 1).Destination }}'  ${container_id} 2>/dev/null)
+  local psql_volume=$(echo $volume_destination | grep '/postgresql/data')
+  if [[ "$psql_volume" != "" ]]; then
+    echo ${DB_TYPE_POSTGRES}
+    return
+	fi
+
+  # If no specific db type is set, default to MySQL
+	echo ${DB_TYPE_MYSQL}
+}
+
 # Start interactive psql shell
 # --db-user="admin" to override psql username
 # --db-password="otherpass" to override psql password
@@ -6968,7 +7007,16 @@ config_show ()
 	echo "IP: $DOCKSAL_IP"
 	echo ""
 
-	echo "MySQL endpoint:" $(docker-compose port db 3306 2>/dev/null | sed "s/0\.0\.0\.0/$DOCKSAL_IP/")
+  local db_type=$(get_db_type);
+  # Print MySQL endpoint only if the volume is defined in the config
+  if [[ "$db_type" == ${DB_TYPE_MYSQL} ]]; then
+	  echo "MySQL endpoint:" $(docker-compose port db 3306 2>/dev/null | sed "s/0\.0\.0\.0/$DOCKSAL_IP/")
+	fi
+
+  # Print PostgreSQL endpoint only if the volume is defined in the config
+  if [[ "$db_type" == ${DB_TYPE_POSTGRES} ]]; then
+	  echo "PostgreSQL endpoint:" $(docker-compose port db 5432 2>/dev/null | sed "s/0\.0\.0\.0/$DOCKSAL_IP/")
+	fi
 	echo "Public URL:" $(cloudflared_get_host)
 
 	# Stop here for "fin config env"
@@ -8218,34 +8266,84 @@ case "$1" in
 	db)
 		load_configuration
 		shift
+	  db_type=$(get_db_type);
 		case "$1" in
 			cli)
 				shift
-				_psql "$@"
-				;;
+    		case $db_type in
+    		  ${DB_TYPE_MYSQL})
+    		    _mysql "$@"
+    		    ;;
+    		  ${DB_TYPE_POSTGRES})
+				    _psql "$@"
+				    ;;
+  		esac
+		  ;;
 			list|ls)
 				shift
-				psql_list "$@"
+    		case $db_type in
+    		  ${DB_TYPE_MYSQL})
+    		    mysql_list "$@"
+    		    ;;
+    		  ${DB_TYPE_POSTGRES})
+				    psql_list "$@"
+				    ;;
+  		  esac
 				;;
 			import)
 				shift
-				psql_import "$@"
+    		case $db_type in
+    		  ${DB_TYPE_MYSQL})
+    		    mysql_import "$@"
+    		    ;;
+    		  ${DB_TYPE_POSTGRES})
+				    psql_import "$@"
+				    ;;
+  		  esac
 				;;
 			dump)
 				shift
-				psql_dump "$@"
+    		case $db_type in
+    		  ${DB_TYPE_MYSQL})
+    		    mysql_dump "$@"
+    		    ;;
+    		  ${DB_TYPE_POSTGRES})
+				    psql_dump "$@"
+				    ;;
+  		  esac
 				;;
 			create)
 				shift
-				psql_db_create "$@"
+    		case $db_type in
+    		  ${DB_TYPE_MYSQL})
+    		    mysql_db_create "$@"
+    		    ;;
+    		  ${DB_TYPE_POSTGRES})
+				    psql_db_create "$@"
+				    ;;
+  		  esac
 				;;
 			drop)
 				shift
-				psql_db_drop "$@"
+    		case $db_type in
+    		  ${DB_TYPE_MYSQL})
+    		    mysql_db_drop "$@"
+    		    ;;
+    		  ${DB_TYPE_POSTGRES})
+				    psql_db_drop "$@"
+				    ;;
+  		  esac
 				;;
 			truncate)
 				shift
-				psql_db_truncate "$@"
+    		case $db_type in
+    		  ${DB_TYPE_MYSQL})
+    		    mysql_db_truncate "$@"
+    		    ;;
+    		  ${DB_TYPE_POSTGRES})
+				    psql_db_truncate "$@"
+				    ;;
+  		  esac
 				;;
 			*)
 				show_help_db
