@@ -38,3 +38,17 @@ services:
 {{% notice note %}}
 Remember to run `fin project start` (`fin p start`) to apply the configuration.
 {{% /notice %}}
+
+## Determining the db service type {#db-service-type}
+The following order is used to determine which db service is currently being used
+
+- If the `db` service has label `io.docksal.db-type` then the value of that label is used.
+  Supported values are 
+  - `mysql`
+  - `postgres`
+- The destination of the second `volumes` `target` for the `db` service is checked for `/postgresql/data` then the result is `postgres`.
+- The default value of `mysql` is used if none of the above conditions are met.
+
+This way there is much flexibility in the configuration of the `db` service.
+
+`fin config` can be used to determine the second `volumes` `target` information
