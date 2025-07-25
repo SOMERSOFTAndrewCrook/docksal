@@ -60,6 +60,8 @@ services:
     volumes:
       - project_root:/var/www:ro,nocopy,cached  # Project root volume (read-only)
       - db_data:/var/lib/mysql  # Database data volume
+    labels:
+      - io.docksal.db-type=mysql
     environment:
       - MYSQL_ROOT_PASSWORD
       - MYSQL_USER
@@ -80,6 +82,8 @@ services:
     volumes:
     - project_root:/var/www:ro,nocopy,cached  # Project root volume (read-only)
     - db_data:/var/lib/mysql  # Database data volume
+    labels:
+      - io.docksal.db-type=mysql
     environment:
     - MYSQL_ROOT_PASSWORD
     - MYSQL_USER
@@ -100,6 +104,8 @@ services:
     volumes:
       - project_root:/var/www:ro,nocopy,cached  # Project root volume (read-only)
       - db_data:/var/lib/postgresql/data  # Database data volume
+    labels:
+      - io.docksal.db-type=postgres
     environment:
       - POSTGRES_DB=${POSTGRES_DB:-default}
       - POSTGRES_USER=${POSTGRES_USER:-user}
