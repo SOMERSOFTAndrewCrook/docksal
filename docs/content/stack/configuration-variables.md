@@ -383,7 +383,7 @@ The port to use when setting up PostgreSQL.
 
 `Default: db`
 
-This variable allows you to specify the name of a database docker service.
+This variable allows you to specify the name of a database docker host.
 
 ### POSTGRES_DB
 
