@@ -379,6 +379,12 @@ This is used to create a user, and the user is granted superuser permissions for
 The port to use when setting up PostgreSQL.
 
 
+### POSTGRES_HOST
+
+`Default: db`
+
+This variable allows you to specify the name of a database docker service.
+
 ### POSTGRES_DB
 
 `Default: default`
