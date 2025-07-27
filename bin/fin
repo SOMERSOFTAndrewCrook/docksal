@@ -6198,7 +6198,7 @@ psql_import ()
 
 # Dump psql database
 # @params
-# $1 - file name, if ommitted then stdout
+# $0 - file name, if omitted then stdout
 # --db="drupal" to override database username
 # --db-user="admin" to override psql username
 # --db-password="otherpass" to override psql password
