@@ -6087,7 +6087,7 @@ psql_db_truncate ()
 	container_psql_vars=$(docker exec "$container_id" env | grep "^POSTGRES_")
 	eval ${container_psql_vars}
 
-	local __dump_user="${dbuser:-root}"
+	local __dump_user="${dbuser:-$POSTGRES_USER}"
 	local __dump_password="${dbpassword:-$POSTGRES_PASSWORD}"
 	local __database="${1:-${POSTGRES_DATABASE:-default}}"
 
