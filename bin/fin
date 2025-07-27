@@ -6026,24 +6026,24 @@ psql_db_create ()
 
 	local __dump_user="${dbuser:-$POSTGRES_USER}"
 	local __dump_password="${dbpassword:-$POSTGRES_PASSWORD}"
-	local __db="${ARGV[0]}"
-	local __db_charset="${dbcharset:-utf8}"
-	local __db_collation="${dbcollation:-en_US.utf8}"
+	local __database="${ARGV[0]}"
+	local __database_charset="${dbcharset:-utf8}"
+	local __database_collation="${dbcollation:-en_US.utf8}"
 
-	[[ "${__db}" == "" ]] && echo-error "Provide a name for the database to create" && exit 1
+	[[ "${__database}" == "" ]] && echo-error "Provide a name for the database to create" && exit 1
 
-	_exec --in="db" "PGPASSWORD=${__dump_password} createdb --username=${__dump_user} --encoding=${__db_charset} --lc-collate=${__db_collation} ${__db}"
+	_exec --in="db" "PGPASSWORD=${__dump_password} createdb --username=${__dump_user} --encoding=${__database_charset} --lc-collate=${__database_collation} ${__database}"
 
 		# GRANT ALL has to happen in a separate query, otherwise we will be hitting a race condition (when db is not yet created).
-	(_psql --db="${__db}" --db-user="${__dump_user}" --db-password="${__dump_password}" \
+	(_psql --db="${__database}" --db-user="${__dump_user}" --db-password="${__dump_password}" --psql_args="-q" \
 		"GRANT ALL ON ALL TABLES IN SCHEMA public TO PUBLIC;") \
 		# GRANT ALL has to happen in a separate query, otherwise we will be hitting a race condition (when db is not yet created).
-		(_psql --db="${__db}" --db-user="${__dump_user}" --db-password="${__dump_password}" \
+		(_psql --db="${__database}" --db-user="${__dump_user}" --db-password="${__dump_password}" --psql_args="-q" \
 		"GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO PUBLIC;")
 
-	if_failed_error "Database '${__db}' creation failed"
+	if_failed_error "Database '${__database}' creation failed"
 
-	echo -e "Database ${yellow}${__db}${NC} created"
+	echo -e "Database ${yellow}${__database}${NC} created"
 }
 
 # Delete a database
@@ -6062,14 +6062,14 @@ psql_db_drop ()
 
 	local __dump_user="${dbuser:-$POSTGRES_USER}"
 	local __dump_password="${dbpassword:-$POSTGRES_PASSWORD}"
-	local __db="${ARGV[0]}"
+	local __database="${ARGV[0]}"
 
-	[[ "${__db}" == "" ]] && echo-error "Provide the name of the database to drop." && exit 1
+	[[ "${__database}" == "" ]] && echo-error "Provide the name of the database to drop." && exit 1
 
-	_exec --in="db" "PGPASSWORD=${__dump_password} dropdb --username=${__dump_user} --if-exist ${__db}"
+	_exec --in="db" "PGPASSWORD=${__dump_password} dropdb --username=${__dump_user} --if-exist ${__database}"
 
-	if_failed_error "Dropping '${__db}' database failed"
-	echo -e "Database ${yellow}${__db}${NC} dropped"
+	if_failed_error "Dropping '${__database}' database failed"
+	echo -e "Database ${yellow}${__database}${NC} dropped"
 }
 
 # Truncate db
