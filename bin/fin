@@ -5971,7 +5971,6 @@ _psql ()
 	local __psql_args="${psql_args:-''}"
 	# POSTGRES_* variable expansion happens here
 	local __dump_user="${dbuser:-$POSTGRES_USER}"
-	# POSTGRES_* variable expansion happens here
 	local __dump_password="${dbpassword:-$POSTGRES_PASSWORD}"
 	local __database="${db:-$POSTGRES_DATABASE}"
 	local __pty_command=''
@@ -6010,6 +6009,7 @@ psql_list ()
 }
 
 # Create a database
+# $0 - database name
 # --db-user="admin" to override psql username
 # --db-password="otherpass" to override psql password
 # --db-charset="..." to override charset (default is utf8)
@@ -6047,6 +6047,7 @@ psql_db_create ()
 }
 
 # Delete a database
+# $0 - database name
 # --db-user="admin" to override psql username
 # --db-password="otherpass" to override psql password
 psql_db_drop ()
@@ -6111,7 +6112,7 @@ psql_db_truncate ()
 
 # Truncate db and import from sql dump
 # @params
-# $1 - file name
+# $0 - file name
 # --db="drupal" to override database username
 # --db-user="admin" to override psql username
 # --db-password="otherpass" to override psql password
